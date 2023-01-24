@@ -72,10 +72,10 @@ The data sets we will work with will be index by time, remember we are doing TIM
 ```{r}
 #using package lubridate
 my_date <- paste(raw_inflow_data[,1],raw_inflow_data[,2],sep="-")
-my_date <- my(my_date)  #function my from package lubridate
+my_date <- my(my_date)  #function my from package lubridate #my means month-year?, ym means year-month #you can also need as.date, but lubridate is better because as.date need exact digit
 head(my_date)
 #add that to inflow_data 
-inflow_data <- cbind(my_date,raw_inflow_data[,3:5])
+inflow_data <- cbind(my_date,raw_inflow_data[,3:5]) #all columns from 3 to 5 
 head(inflow_data)
 format(my_date[1],format="%y-%m")
 format(my_date[1],format="%Y-%m")
@@ -89,6 +89,8 @@ format(my_date[1],format="%Y-%b")
 A plot of observed values over time is the first you do to start understanding the data set. The default packages on R offer the function *plot()*. 
 
 ```{r}
+
+# if In-line, in here; if in console, then in the plot function (右下角)
 #Graph 1: Plot the series for HP1
 plot(inflow_data[,"HP1"]) # note that this do not generate a nice plot
 
@@ -139,19 +141,29 @@ ggplot(inflow_data, aes(x=my_date, y=HP1)) +
 #adding two time series to the same plot
 ggplot(inflow_data, aes(x=my_date, y=Inflow)) +
             geom_line(aes(y=HP1,col="HP1")) +
-            geom_line(aes(y=HP2,col="HP2")) +
+            geom_line(aes(y=HP2,col="HP2")) +   # use line so two plots can be in the same plot
             xlab("Time") +
-            labs(color="Reservoir")
+            labs(color="Reservoir") #rename the legend using "labs"
 ```
 ## Transforming data into time series object
 
 Many of the functions we will use require a time series object. You can transform your data in a time series using the function *ts()*. Only the columns with reservoir inflow data should be transformed, not the ones with month and year. Your ts object is not a data frame, but like I said we will need it as a ts for some function we will explore in future scripts.
 
 ```{r}
-ts_inflow_data <- ts(inflow_data[,2:(2+nhydro-1)]) #note that we are only transforming columns with inflow data, not the date columns
+ts_inflow_data <- ts(inflow_data[,2:(2+nhydro-1)]) #note that we are only transforming columns with inflow data, not the date columns  #(2+nhydro-1) add up equal to 4; can also be nhydro +1, same result
 ts_inflow_data
 #plot(ts_inflow_data[,1])
+
+
+#start = the first of your time series
+#frequency = when your data repeating itself, frequency of monthly is 12
 ```
 
 Note that ts_inflow_data has information on start, end and frequency. We will discuss frequency in future lectures, for now let's just keep the default value for frequency which is 1.
+
+```{r}
+acf(ts_inflow_data[,1])  # x is our time series #from the plot, we see the seasonal component here # the blue line is significant level, inside the blue line is not significant 
+pacf(ts_inflow_data[,1])
+
+```
 
