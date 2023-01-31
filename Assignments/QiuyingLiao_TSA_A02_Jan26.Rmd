@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2023"
 subtitle: "Assignment 2 - Due date 02/03/23"
-author: "Student Name"
+author: "Qiuying Liao"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -22,7 +22,9 @@ R packages needed for this assignment:"forecast","tseries", and "dplyr". Install
 
 ```{r}
 #Load/install required package here
-
+library(forecast)
+library(tseries)
+library(dplyr)
 ```
 
 
@@ -31,16 +33,20 @@ R packages needed for this assignment:"forecast","tseries", and "dplyr". Install
 Consider the data provided in the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx" on our **Data** folder. The data comes from the US Energy Information and Administration and corresponds to the December 2022 Monthly Energy Review. The spreadsheet is ready to be used. You will also find a $.csv$ version of the data "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv". You may use the function $read.table()$ to import the $.csv$ data in R. Or refer to the file "M2_ImportingData_CSV_XLSX.Rmd" in our Lessons folder for functions that are better suited for importing the $.xlsx$.
 
 ```{r}
-#Importing data set
-
+#Importing data set using read.csv
+energy_data <- read.csv(file="../Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv", header = TRUE, dec = ".", sep=",",stringsAsFactors = TRUE) 
 ```
+
 
 
 ## Question 1
 You will work only with the following columns: Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption. Create a data frame structure with these three time series only. Use the command head() to verify your data.
 
 ```{r}
+#create data frame
+energy_df <- data.frame(energy_data$Month,energy_data$Total.Biomass.Energy.Production, energy_data$Total.Renewable.Energy.Production, energy_data$Hydroelectric.Power.Consumption)
 
+head(energy_df)
 ```
 
 
@@ -48,7 +54,7 @@ You will work only with the following columns: Total Biomass Energy Production, 
 Transform your data frame in a time series object and specify the starting point and frequency of the time series using the function ts().
 
 ```{r}
-
+ts_energy_df <- ts(energy_df[,2:4], start = c(1973,1), frequency = 12)
 ```
 
 
@@ -56,6 +62,16 @@ Transform your data frame in a time series object and specify the starting point
 Compute mean and standard deviation for these three series.
 
 ```{r}
+#rewrite column names
+colnames(ts_energy_df)=c("Biomass","Renewable", "Hydroelectric")
+
+mean_biomass <- mean(ts_energy_df[,"Biomass"])
+mean_renewable <- mean(ts_energy_df[,"Renewable"])
+mean_hydroelectric <- mean(ts_energy_df[,"Hydroelectric"])
+
+sd_biomass <- sd(ts_energy_df[,"Biomass"])
+sd_renewable <- sd(ts_energy_df[,"Renewable"])
+sd_hydroelectric <- sd(ts_energy_df[,"Hydroelectric"])
 
 ```
 
@@ -64,15 +80,35 @@ Compute mean and standard deviation for these three series.
 Display and interpret the time series plot for each of these variables. Try to make your plot as informative as possible by writing titles, labels, etc. For each plot add a horizontal line at the mean of each series in a different color.
 
 ```{r}
+#Graph 1: Plot the series for Total Biomass Energy Production
+plot(ts_energy_df[,"Biomass"],type="l",col="blue",ylab="total Biomass Energy Production [MW]", xlab="Year", main="Total Biomass Energy Production") 
+
+#Additional - Suppose you want to add a line with the mean
+abline(h=mean(ts_energy_df[,"Biomass"]),col="red")
 
 ```
 
+```{r}
+#Graph 2: Plot the series for Total Renewable Energy Production 
+plot(ts_energy_df[,"Renewable"],type="l",col="green",ylab="Total Renewable Energy Production [MW]", xlab="Year", main="Total Renewable Energy Production") 
+
+#Additional - Suppose you want to add a line with the mean
+abline(h=mean(ts_energy_df[,"Renewable"]),col="red")
+```
+
+```{r}
+#Graph 3: Plot the series for hydroelectric power consumption 
+plot(ts_energy_df[,"Hydroelectric"],type="l",col="orange",ylab="Hydroelectric Power Consumption [MW]", xlab="Year", main="Hydroelectric Power Consumption") 
+
+#Additional - Suppose you want to add a line with the mean
+abline(h=mean(ts_energy_df[,"Hydroelectric"]),col="red")
+```
 
 ## Question 5
 Compute the correlation between these three series. Are they significantly correlated? Explain your answer.
 
 ```{r}
-
+cor(ts_energy_df)
 ```
 
 
@@ -80,7 +116,7 @@ Compute the correlation between these three series. Are they significantly corre
 Compute the autocorrelation function from lag 1 up to lag 40 for these three variables. What can you say about these plots? Do the three of them have the same behavior?
 
 ```{r}
-
+acf(ts_energy_df[,1], lag.max = 40)
 ```
 
 
@@ -88,7 +124,7 @@ Compute the autocorrelation function from lag 1 up to lag 40 for these three var
 Compute the partial autocorrelation function from lag 1 to lag 40 for these three variables. How these plots differ from the ones in Q6?
 
 ```{r}
-
+pacf(ts_energy_df[,1], lag.max = 40)
 ```
 
 

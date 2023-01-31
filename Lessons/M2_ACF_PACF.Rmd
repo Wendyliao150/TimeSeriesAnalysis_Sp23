@@ -50,7 +50,7 @@ getwd()
 # my output was "/Users/lmm89/OneDrive/Duke_University/9_Spring2022/ENV790_TSA/Git_Repo/ENV790_TimeSeriesAnalysis_Sp2022_v2" meaning current directory is my project folder, therefore I only need to use "."
 # if output was "/Users/lmm89/OneDrive/Duke_University/9_Spring2022/ENV790_TSA/Git_Repo/ENV790_TimeSeriesAnalysis_Sp2022_v2/Lessons" then I would need to use ".."
 
-raw_inflow_data <- read.table(file="./Data/inflowtimeseries.txt",header=FALSE,skip=0)
+raw_inflow_data <- read.table(file="../Data/inflowtimeseries.txt",header=FALSE,skip=0)
 
 #If you want specific columns just trim the table
 raw_inflow_data <- raw_inflow_data[,1:5] #the space before the comma means you want all rows
@@ -163,7 +163,21 @@ Note that ts_inflow_data has information on start, end and frequency. We will di
 
 ```{r}
 acf(ts_inflow_data[,1])  # x is our time series #from the plot, we see the seasonal component here # the blue line is significant level, inside the blue line is not significant 
+#the first acf is always 1
+#acf only takes time series data
+
+#if you want to see lag
+acf(ts_inflow_data[,1], lag.max = 50)
+
+#pacf
 pacf(ts_inflow_data[,1])
 
+#capital acf and pacf: start at lag 1 instead of lag 0, because lag 0 is 1 
+
+library(forecast)
+Acf(ts_inflow_data[,1], lag.max = 50)
+Pacf(ts_inflow_data[,1], lag.max = 50)
 ```
+
+
 
