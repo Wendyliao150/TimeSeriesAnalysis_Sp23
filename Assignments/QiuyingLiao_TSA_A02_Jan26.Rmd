@@ -54,6 +54,10 @@ head(energy_df)
 Transform your data frame in a time series object and specify the starting point and frequency of the time series using the function ts().
 
 ```{r}
+#Convert month into format
+
+
+
 ts_energy_df <- ts(energy_df[,2:4], start = c(1973,1), frequency = 12)
 ```
 
@@ -118,6 +122,12 @@ Compute the autocorrelation function from lag 1 up to lag 40 for these three var
 ```{r}
 acf(ts_energy_df[,1], lag.max = 40)
 ```
+```{r}
+acf(ts_energy_df[,2], lag.max = 40)
+```
+```{r}
+acf(ts_energy_df[,3], lag.max = 40)
+```
 
 
 ## Question 7
@@ -125,6 +135,14 @@ Compute the partial autocorrelation function from lag 1 to lag 40 for these thre
 
 ```{r}
 pacf(ts_energy_df[,1], lag.max = 40)
+```
+
+```{r}
+pacf(ts_energy_df[,2], lag.max = 40)
+```
+
+```{r}
+pacf(ts_energy_df[,3], lag.max = 40)
 ```
 
 
