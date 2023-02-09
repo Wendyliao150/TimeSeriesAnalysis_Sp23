@@ -75,7 +75,7 @@ Initial time series plot.
 for(i in 1:nhydro){
   print(ggplot(inflow_data, aes(x=my_date, y=inflow_data[,(1+i)])) +
             geom_line(color="blue") +
-            ylab(paste0("Inflow ",colnames(inflow_data)[(1+i)],sep="")) 
+            ylab(paste0("Inflow",colnames(inflow_data)[(1+i)],sep="")) 
         )
 }
 
@@ -125,7 +125,7 @@ Let's use functions Acf() and Pacf() from package "forecast".
 name <- colnames(inflow_data)
 for(i in 1:nhydro){
   par(mfrow=c(1,2))
-  Acf(ts_inflow_data[,i],lag.max = 40,main=name[i+1],ylim=c(-1,1))
+  Acf(ts_inflow_data[,i],lag.max = 40,main=name[i+1],ylaim=c(-1,1))
   Pacf(ts_inflow_data[,i],lag.max = 40,main=paste0("HP",i),ylim=c(-1,1))
 }
 
@@ -154,9 +154,15 @@ ggplot(inflow_data,aes(x=my_date,y=inflow_data[,iHP+1]))+
 
 
 ```{r}
+beta0 <- linear_trend$coefficients[1]
+beta1 <- linear_trend$coefficients[2]
+
 #remove the trend from series
+detrend_inflow_data <- inflow_data[,(iHP+1)]-(beta0+beta1*t)
 
-
+ggplot(inflow_data, aes(x=my_date,y=inflow_data[,iHP+1]))+
+  geom_line(color="blue")+
+  geom_line(aes(y=detrend_inflow_data),color="green")
 
 ```
 Note that blue line is our original series, red lien is our trend, green line is our original series minus the trend or in other words the detrended series. And in orange is the trend line for the detrended series which has slope 0 meaning we were able to effectively eliminate the trend with a linear model.
@@ -167,6 +173,39 @@ Now let's shift attention to the seasonal component.
 
 ```{r}
 #Use seasonal means model
+iHP=1
+
+dummies <- seasonaldummy(ts_inflow_data[,iHP]) #only have 11, have to leave one out for comparison
+# run with intersect, then you will have 11
+
+seas_means_model <- lm(inflow_data[,(iHP+1)]~dummies) #lm function only take data frame  # we used the orignal data (we detrend from original data in this case)
+summary(seas_means_model)
+# mean for january is the intercept + the value of january*coefficient
+# intercept = mean of December
+
+beta0 <- seas_means_model$coefficients[1]
+beta1 <- seas_means_model$coefficients[2:12]
+
+inflow_seas_comp <- array(0,nobs)
+for(i in 1:nobs){
+  inflow_seas_comp[i] = beta0 + beta1 %*% dummies[i,] #dummy only takes time series
+}
+
+
+
+ggplot(inflow_data,aes(x=my_date, y=inflow_data[,iHP+1]))+
+  geom_line(color="blue")+
+  geom_line(aes(y=inflow_seas_comp), color="orange")
+
+
+#works for short time period series
+
+#fit a constant seasonal model
+#eliminate trend, seasonality
+
+#diversify for trend and seasonality
+
+         
 
 
 ```
@@ -181,8 +220,19 @@ Fit trend and seasonal for the other variables HP2, HP3, ...
 Some test only work for non-seasonal data. So let's create another series with yearly averages for inflow.
 
 ```{r}
+iHP=1
 #Group data in yearly steps instances
+inflow_data_matrix <- matrix(ts_inflow_data[,iHP], byrow=FALSE, nrow=12)
+inflow_data_yearly <- colMeans(inflow_data_matrix)
 
+library(dplyr) #move this to package chunk later
+my_year <- c(year(first(my_date)): year(last(my_date)))
+
+inflow_data_new_yearly <- data.frame(my_year, inflow_data_yearly)
+
+ggplot(inflow_data_new_yearly, aes(x=my_year, y=inflow_data_yearly)) +
+  geom_line(color="blue")+
+  geom_smooth(color= "red", method="lm")
 
 ```
 
@@ -194,9 +244,17 @@ Check for deterministic trend.
 
 #Since I have seasonal data I cannot use the simple MannKendall()
 #another example of functions that need a ts object
-
-
+SMKtest <- SeasonalMannKendall(ts_inflow_data[,iHP])
+print(summary(SMKtest))
 #Use yearly date to run Mann Kendall
+
+
+#Mann Kendall
+#null:dataset is stationary (no trend)
+#Ha: dataset have trend
+
+#how do we know? use p-value
+
 
 ```
 
