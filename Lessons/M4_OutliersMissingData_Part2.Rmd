@@ -39,7 +39,7 @@ Today we will work with wind speed data.
 ```{r}
 
 #Importing time series data from text file#
-wind_data <- read.csv(file="./Data/Wind_Speed_PortArthurTX_Processed.csv",header=TRUE,stringsAsFactors = TRUE)
+wind_data <- read.csv(file="../Data/Wind_Speed_PortArthurTX_Processed.csv",header=TRUE,stringsAsFactors = TRUE)
 
 #creating data object
 wind_data$DATE <- ym(wind_data$DATE)
@@ -68,6 +68,9 @@ ggplot(wind_data, aes(x = DATE, y = AWND.1)) +
   ylab("Average Wind Speed") 
 
 ```
+```{r}
+#There is a gap between around 1985, some are around other places in the graph
+```
 
 ## Using pre-built function to clean series
 
@@ -75,7 +78,7 @@ tsclean() from package 'forecast' identify and replace outliers and missing valu
 
 ```{r}
 
-clean_wind_data <- tsclean(ts_wind_data)  #object should be a time series
+clean_wind_data <- tsclean(ts_wind_data)  #object should be a time series #tsclean connect the gap
 
 full_wind_data <- data_frame(Date=wind_data$DATE, Wind = wind_data$AWND.1, Wind_Clean = as.numeric(clean_wind_data))
 
@@ -106,19 +109,30 @@ Additional info on decompose()
 
 ```{r}
 #Ex1: Using R decompose function decompose the wind data in seasonal, trend and random
-
+decompose_wind_data <- decompose(clean_wind_data) # the default is additive, can change to multiplicative (diving the original data by the trend); multiplicative assume that seasonal ocmponent will depend on the level of series
+plot(decompose_wind_data)
+#not a linear model, it is a moving average model
 
 #Ex2: Store the three component in separate vector
-  
+wind_trend <- decompose_wind_data$trend
+wind_seasonal <- decompose_wind_data$seasonal
+wind_random <- decompose_wind_data$random
 
 #Ex3: Create one data frame with all three vector and the Date columns from wind_data
-
+df_wind_data <- data.frame("date"= wind_data$DATE, wind_trend, wind_seasonal, wind_random)
 
 #Ex4: Inspect the data frame using head() and tail()
-
-
+head(df_wind_data,24)  #loss 6 for the trend (moving average), random : original series - seasonal - trend =NA #for seasonal we just finding the means, can use the means of first observation; use in between observation to calculate the mean (0.446 repeat at 13) 
+tail(df_wind_data,10) #see the same 6 NA, don't have next 6 observation for moving average
 # Discuss the results
 
 ```
 
+```{r}
+decompose_wind_data <- stl(clean_wind_data, s.window = "periodic") #only additive model 
+plot(decompose_wind_data)
+
+#the smaller the bar, the more is representing your time series, the trend component is not very pronoucing, the seasonal component  represent most of the variable of your series
+# if the bar is high: have to zoom in to see my dataset 
+```
 
