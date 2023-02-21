@@ -31,12 +31,29 @@ library(tseries)
 library(Kendall)
 library(dplyr)
 library(lubridate)
+library(readr)
 
 ```
 
 ## Questions 
 
 Consider the same data you used for A3 from the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx". The data comes from the US Energy Information and Administration and corresponds to the December 2022 Monthly Energy Review. For this assignment you will work only with the column "Total Renewable Energy Production". 
+
+```{r}
+energy_data <- read_csv("../Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv")
+View(energy_data)
+
+#create data frame
+energy_df <- data.frame(energy_data$Month, energy_data$`Total Renewable Energy Production`)
+
+head(energy_df)
+
+#Convert month into format
+Date <- paste(energy_df[,1], "01", sep = "")
+Date_new <- as.Date (Date, format="%Y %B %d")
+head(Date_new)
+
+```
 
 
 ```{r}
@@ -156,7 +173,6 @@ ggplot(diff_energy_data_df, aes(x=Month))+
   labs(title= "Different time Series of Renewable Energy Production")+ 
   scale_color_manual(name = "Series", values = colors)
 
-
 ```
 
 ### Q5
@@ -186,7 +202,7 @@ print(summary(SMKtest))
 
 ```
 
-*The p value for SMK test is less than 0.05, showing that it reject the null hypothesis and there is deterministic trend
+*The p value for SMK test is less than 0.05, showing that it rejects the null hypothesis and there is a deterministic trend. It matches what we observed in Q2 that there is a trend in hte original series in the graph.*
 
 
 ```{r}
@@ -198,8 +214,11 @@ print(adf.test(ts_energy_data_df[,1], alternative = "stationary"))
 
 ```
 
+*The p value for ADF is larger than 0.05, showing that it cannot reject the null hypothesis, so there is stationarity in the series. It matches what we observed in Q2 partially since the series did fluctuate around 0, but there is an decreasing and increasing trend in the graph, meaning that there might be other factors that affect the series even after detrending. *
+
 ### Q7
 Aggregate the original "Total Renewable Energy Production" series by year. You can use the same procedure we used in class. Store series in a matrix where rows represent months and columns represent years. And then take the columns mean using function colMeans(). Recall the goal is the remove the seasonal variation from the series to check for trend. 
+
 
 ```{r}
 
@@ -214,6 +233,9 @@ head(energy_data_yearly)
 
 Apply the Mann Kendal, Spearman correlation rank test and ADF. Are the results from the test in agreement with the test results for the non-aggregated series, i.e., results for Q6?
 
+
+*The results from the test in agreement with the test results for the non-aggregated series, the p value for SMK and spearman correlation test is less than 0.05, showing that there is a deterministic trend and can reject the null hypothesis. The p value for ADF is larger than 0.05, meaning that it cannot reject the null hypothesis and have stationarity.*
+
 ```{r}
 #Seasonal Mann-Kendall (use yearly data)
 #Check for deterministic trend
@@ -226,15 +248,15 @@ print(summary(MannKendall(energy_data_yearly)))
 #Spearman Correlation Test (use yearly data)
 #Also check for deterministic trend, for non-seasonal data only
 
-#my_date <- paste(energy_data_df[,1])
+my_year <- c(year(first(Date_new)):year(last(Date_new)))
 
-#print("Results from Spearman Correlation")
-#sp_rho=cor(energy_data_yearly,year,method="spearman")
-#print(sp_rho)
+print("Results from Spearman Correlation")
+sp_rho=cor(energy_data_yearly,my_year,method="spearman")
+print(sp_rho)
 
 #with cor.test you can get test statistics
-#sp_rho=cor.test(energy_data_yearly,my_year,method="spearman")
-#print(sp_rho)
+sp_rho=cor.test(energy_data_yearly,my_year,method="spearman")
+print(sp_rho)
 ```
 
 ```{r}
