@@ -129,7 +129,7 @@ The ACF and PACF from the seasonal adjusted series will help you specify compone
 ```{r}
 
 #Creating non-seasonal residential price time series
-deseasonal_residential_price <- seasadj(decompose_residential_price)  
+deseasonal_residential_price <- seasadj(decompose_residential_price)  #seasonal adjustment to your original data, only works for decompose  
 
 df_residential <- data.frame( Month = electricity_price_processed$Month,
                              Residential = electricity_price_processed$Residential,
@@ -152,6 +152,7 @@ par(mar=c(3,3,3,0));par(mfrow=c(1,2))
 Pacf(df_residential$Residential,lag.max=40,main="Residential")
 Pacf(df_residential$NonSeasonalResidential,lag.max=40,main="Non Sesonal Residential")
 
+# we remove those little spikes for the seasonality (left, downside)
 
 ```
 
