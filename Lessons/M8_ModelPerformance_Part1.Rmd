@@ -117,7 +117,7 @@ plot(decompose_allsectors_price)
 deseasonal_allsectors_price <- seasadj(decompose_allsectors_price)  
 ```
 
-## Fitting Models to the original (seasonal) series
+## Fitting Models to the original (seasonal) series (backward looking model)
 
 On M8 we tried several models for both seasonal and deseasonal electricity price series. This week the goal is to chekc accuracy of those models. Let's start by looking at residual plots and AIC to check how the models represent the historical prices.
 
@@ -125,8 +125,12 @@ On M8 we tried several models for both seasonal and deseasonal electricity price
 ```{r}
 MEAN_seas <- meanf(y = ts_electricity_price[,"All.sectors"], h = 12)
 checkresiduals(MEAN_seas)
+
+#ACF graph: have strong autoregression component, show that not independent, not good 
 ```
 Note a clear trend on residuals series, showing that the mean is not a good to model the trend component. And aside from trend the seasonal component is also not being modeled.
+
+
 
 ### Model 2: Seasonal naive
 ```{r}
@@ -139,11 +143,13 @@ The residuals for the seasonal naive don't seem to have a strong trend. Because 
 ```{r}
 SARIMA_autofit <- auto.arima(ts_electricity_price[,"All.sectors"])
 checkresiduals(SARIMA_autofit)
+#histogram: more look like normal distribution, much better
+#independent distributed
 ```
 This is by far the best fit. Notice the residual series seems to be random and ACF shows no significant self correlation.
 
 
-## Model Performance for forecasting 12 steps ahead
+## Model Performance for forecasting 12 steps ahead (foreward looking)
 
 We are done with backward-looking assessment. SARIMA seems to be a good fit for our data. In a real world, you wouldn't even move further with the arithmetic mean or the seasonal naive method. Since they fail the backward-looking assessment, it's known that they will lead to poor forecast. But just as an exercise we will also perform a forward-looking assessment for all three model.
 
@@ -175,9 +181,13 @@ $MAPE = \sum|Actual - Forecast|/Actual/n*100$
 
 ```{r}
 observed <- electricity_price_processed[(nobs-n_for+1):nobs, "All.sectors"]
+#last 12 elements:(nobs-n_for+1):nobs
+
 #Model 1: Arithmetic mean
-MEAN_scores <- accuracy(MEAN_seas$mean,observed)  #store the performance metrics
+MEAN_scores <- accuracy(MEAN_seas$mean,observed)  #store the performance metrics #compare with observed
 plot(MEAN_seas)  #plot forecasts
+
+#backward have more metrics than foreward one
 
 #Model 2: Seasonal naive 
 SNAIVE_scores <- accuracy(SNAIVE_seas$mean,observed)
@@ -185,7 +195,7 @@ plot(SNAIVE_seas)
 
 # Model 3:  SARIMA 
 #remember auto.arima does not call the forecast() internally so we need one more step
-SARIMA_for <- forecast(SARIMA_autofit,h=12)
+SARIMA_for <- forecast(SARIMA_autofit,h=12) #we are interested in the mean
 SARIMA_scores <- accuracy(SARIMA_for$mean,observed)
 plot(SARIMA_for)
 
@@ -199,6 +209,9 @@ Now we will create a data frame that combines performance metrics for all the th
 #create data frame
 seas_scores <- as.data.frame(rbind(MEAN_scores, SNAIVE_scores, SARIMA_scores))
 row.names(seas_scores) <- c("MEAN", "SNAIVE","SARIMA")
+
+#last column: mean absolute percentage error: SARIMA has the best error. we want value to be small as possible. 
+
 
 #choose model with lowest RMSE
 best_model_index <- which.min(seas_scores[,"RMSE"])
@@ -215,6 +228,8 @@ kbl(seas_scores,
   kable_styling(full_width = FALSE, position = "center") %>%
   #highlight model with lowest RMSE
   kable_styling(latex_options="striped", stripe_index = which.min(seas_scores[,"RMSE"]))
+
+#kbl function: to make dataframe
 ```
 
 ## Visialization Challenge
