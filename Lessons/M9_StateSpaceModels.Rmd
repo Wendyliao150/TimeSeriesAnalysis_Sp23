@@ -172,9 +172,11 @@ Notice the residual series seems to be random and ACF shows no significant self 
 Let's start by trying an exponential smoothing under the state space model. In teh videos we went over the state equation for level only. But the ES can be used to represent trend and seasonal as well, these are know as ETS (Exponential Trend and Seasonal) models. We will talk in more details on M11.
 
 ```{r}
-SSES_seas <- es(ts_price,model="ZZZ",h=n_for,holdout=FALSE,silent="none")
+SSES_seas <- es(ts_price,model="ZZZ",h=n_for,holdout=FALSE) #,silent="none")
 plot(SSES_seas)
 checkresiduals(SSES_seas)
+
+#es; you can change your parameter over time
 ```
 Note that the best model here was a ETS(AAM) which means we are fitting an additive random error, an additive trend and a multiplicative seasonal component.
 
@@ -189,9 +191,26 @@ The function takes a few arguments, here are the important ones:
 
 
 ```{r}
+
+
+#SS_seas <- StructTS(ts_price,
+                    #type="BSM",fixed=c(NA,NA,NA,NA)) #put NA to let them help us find the values (NA allows it to try different variance)
+
+#for ACF: our error are correlated, not good, so try differernt value (below)
+
+#the four variation:
+#1. level of the series 
+#2. trend of the series
+#3. seasonal 
+#4. observation: Yt
+
+
 SS_seas <- StructTS(ts_price,
                     type="BSM",fixed=c(0,0.001,0.3,NA))   #this function has convergence issues
 checkresiduals(SS_seas)
+
+#=c(0,0.001,0.3,NA)) keep playing with this model until the model looks good
+#how your residual are correlated, we want residual to be uncorrelated when fitting a model
 
 #Generating forecasts
 # StructTS() does not call the forecast() internally so we need one more step
@@ -262,6 +281,9 @@ kbl(seas_scores,
   kable_styling(full_width = FALSE, position = "center") %>%
   #highlight model with lowest RMSE
   kable_styling(latex_options="striped", stripe_index = which.min(seas_scores[,"RMSE"]))
+
+#if we allow our variance to have more, we did a better job in fitting models, but it also leads to many problems such as convergence
+
 ```
 ## Plotting everything together
 

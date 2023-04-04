@@ -10,6 +10,7 @@ editor_options:
 ---
 
 ## CREATE A REPOSITORY IN YOUR GITHUB ACCOUNT
+(optional)
 
 1. Go to your user account on GitHub and navigate to the repositories tab. 
 
@@ -40,7 +41,9 @@ Note that I provided hourly data. You shoudl take teh **average** of the 24 hour
 
 ## CREATE A TIME SERIES OBJECT
 
-After you process your dataset use the `msts()` function to create a time series object. You need to use `msts()` instead of `ts()` because your daily data will have more than one seasonal component.
+After you process your dataset use the `msts()` function to create a time series object. You need to use `msts()` instead of `ts()` because your daily data will have more than one seasonal component. 
+
+#multiply seasonal time series
 
 ## FIT MODELS TO YOUR DATA
 
