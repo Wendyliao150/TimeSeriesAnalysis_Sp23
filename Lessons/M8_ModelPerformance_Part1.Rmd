@@ -4,7 +4,7 @@ author: "Luana Lima"
 output: pdf_document
 always_allow_html: true
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Setting R code chunk options
@@ -159,7 +159,7 @@ The function accuracy() will return performance measures. It takes the main argu
 
 **object** object of class forecast, or numerical values containing forecasts. **x** numerical vector containing observed values (optional).
 
-If **x** is not provided the function will return performance measures for trainign set, i.e., based on historical data it will compare observed and fitted values.
+If **x** is not provided the function will return performance measures for training set, i.e., based on historical data it will compare observed and fitted values.
 
 The measures calculated are:
 
